@@ -11,14 +11,6 @@ models:
         description: >
           The scraper's posting id. Not unique at this grain by design; uniqueness is
           promised, and tested, at fct_job_postings.
-      - name: search_term
-        description: The role the scraper searched for; exactly three values by construction.
-      - name: search_date
-        description: Scrape day; doubles as the incremental high-water mark in fct_job_postings.
-      - name: searched_at
-        description: Scrape timestamp (search_time cast); anchors the snapshot's updated_at.
-      - name: search_location
-        description: Location parameter the scraper searched under.
       - name: job_title
         description: Posting title as scraped.
       - name: company_name
@@ -28,6 +20,13 @@ models:
       - name: job_via
         description: >
           Source or job board label from the posting; the leading 'via' text is removed.
+      - name: job_posted_at
+        description: >
+          Raw relative posted time ('10 hours ago'), kept unparsed — search_date carries the
+          course's time axis (~95% of rows are scraped within a day of posting); parsing this
+          precisely is a supporter exercise.
+      - name: job_salary
+        description: Salary information for the posting, as provided by the scraper.
       - name: job_schedule_type
         description: >
           As scraped; 12,252 nulls stay null (documented, not fixed). 17 distinct values in
@@ -36,15 +35,22 @@ models:
           warn severity instead of silently "fixed".
       - name: job_work_from_home
         description: True when the posting is flagged remote.
-      - name: job_posted_at
-        description: >
-          Raw relative posted time ('10 hours ago'), kept unparsed — search_date carries the
-          course's time axis (~95% of rows are scraped within a day of posting); parsing this
-          precisely is a supporter exercise.
-      - name: job_salary
-        description: Salary information for the posting, as provided by the scraper.
-      - name: job_extensions_raw
-        description: Raw extension details associated with the posting, as provided by the scraper.
+      - name: searched_at
+        description: Scrape timestamp (search_time cast); anchors the snapshot's updated_at.
+      - name: search_date
+        description: Scrape day; doubles as the incremental high-water mark in fct_job_postings.
+      - name: search_term
+        description: The role the scraper searched for; exactly three values by construction.
+      - name: search_location
+        description: Location parameter the scraper searched under.
+      - name: has_no_degree_mentioned
+        description: True when the posting mentions no degree requirement.
+      - name: has_health_insurance
+        description: True when the posting lists health insurance as a job extension.
+      - name: has_dental_insurance
+        description: True when the posting lists dental insurance as a job extension.
+      - name: has_paid_time_off
+        description: True when the posting lists paid time off as a job extension.
       
   - name: stg_job_skills
     description: >
