@@ -32,7 +32,7 @@ cleaned as (
         array_contains(
             job_extentions,
             "{{keyword}}"
-        ) as has_{{keyword | lower | replace(' ', '_')}}
+        ) as has_{{ slugify(keyword) }}
         {{- "," if not loop.last }}
         {% endfor %}
     from parsed
