@@ -27,6 +27,26 @@ models:
           precisely is a supporter exercise.
       - name: job_salary
         description: Salary information for the posting, as provided by the scraper.
+      - name: salary_min
+        description: >
+          Lower salary bound parsed from the first range segment; K and M suffixes are
+          converted to numeric values. Null when the salary is missing or cannot be parsed.
+      - name: salary_max
+        description: >
+          Upper salary bound parsed from the last range segment; for a single salary value,
+          that value is used as the upper bound. K and M suffixes are converted to numeric
+          values. Null when the salary is missing or cannot be parsed.
+      - name: salary_period
+        description: >
+          Pay period extracted from the end of the salary text (year, hour, month, day, or
+          week); null when no supported period is present.
+      - name: salary_average
+        description: >
+          Midpoint of salary_min and salary_max. Null when either bound is null.
+      - name: salary_currency
+        description: >
+          Currency marker parsed from the start of the salary text; defaults to USD when a
+          salary is present but no marker is provided. Null when the salary is missing.
       - name: job_schedule_type
         description: >
           As scraped; 12,252 nulls stay null (documented, not fixed). 17 distinct values in
