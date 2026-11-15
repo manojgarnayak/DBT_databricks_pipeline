@@ -17,7 +17,7 @@ models:
         description: Employer name, trimmed; the natural key into dim_company.
       - name: job_location
         description: Posting location as scraped.
-      - name: job_via
+      - name: source_platform
         description: >
           Source or job board label from the posting; the leading 'via' text is removed.
       - name: job_posted_at
