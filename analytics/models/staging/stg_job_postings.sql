@@ -1,52 +1,58 @@
-{% set extention_keywords = [
-    "No degree mentioned",
-    "Health insurance",
-    "Dental insurance",
-    "Paid time off"
-]
-%}
-with source as(
-    select * from {{ source('jobs', 'raw_job_postings') }} where error is not true
+{% set extension_keywords = [
+    'Health insurance',
+    'Dental insurance',
+    'Paid time off',
+    'No degree mentioned'
+] %}
+
+WITH source AS (
+
+    SELECT *
+    FROM {{ source('jobs', 'raw_job_postings') }}
+    WHERE error IS NOT TRUE
+      AND job_id IS NOT NULL
+
 ),
-parsed as (
-    select *, 
-    from_json(job_extensions_raw, 'array<string>') as job_extentions
-    from source
+parsed AS (
+
+    SELECT
+        *,
+        FROM_JSON(job_extensions_raw, 'array<string>') AS job_extensions
+    FROM source
+
 ),
-cleaned as (
-    select
+renamed AS (
+    SELECT
         job_id,
+        search_term,
+        search_date,
+        CAST(search_time AS TIMESTAMP) AS searched_at,
+        search_location,
         job_title,
-        trim(company_name) as company_name,
+        TRIM(company_name) AS company_name,
         job_location,
-        regexp_replace(job_via, '^via', '') as source_platform,
-        job_posted_at,
+        REGEXP_REPLACE(job_via, '^via ', '') AS source_platform,  -- 'via LinkedIn' scraper artifact, ~6.3k rows
         job_schedule_type,
         job_work_from_home,
-        search_time as searched_at,
-        search_date,
-        search_term,
-        search_location,
+        job_posted_at,
         job_salary,
-        -- lower bound: the number before the en-dash, times its K or M suffix
-        {{ parse_salary('min') }} as salary_min,
-        -- upper bound: the same parse on the LAST segment, so a single value is its own range
-        {{ parse_salary('max') }} as salary_max,
-        -- pay period, read off the end of the text: 'a year', 'an hour'
+        {{ parse_salary('min') }} AS salary_min,
+        {{ parse_salary('max') }} AS salary_max,
+        ({{ parse_salary('min') }} + {{ parse_salary('max') }}) / 2 AS salary_avg,
         NULLIF(REGEXP_EXTRACT(job_salary, 'an? (year|hour|month|day|week)$', 1), '') AS salary_period,
-        -- currency marker; a salaried row with no marker is stamped USD on purpose
-        ({{ parse_salary('min') }} + {{ parse_salary('max') }}) / 2 as salary_average,
         CASE
             WHEN job_salary IS NOT NULL
             THEN COALESCE(NULLIF(TRIM(REGEXP_EXTRACT(job_salary, '^([^0-9]+)', 1)), ''), 'USD')
         END AS salary_currency,
-        {% for keyword in extention_keywords -%}
-        array_contains(
-            job_extentions,
-            "{{keyword}}"
-        ) as has_{{ slugify(keyword) }}
-        {{- "," if not loop.last }}
-        {%- endfor %}
-    from parsed
+        {% for keyword in extension_keywords %}
+        ARRAY_CONTAINS(
+            job_extensions,
+            '{{ keyword }}'
+        ) AS has_{{ slugify(keyword) }}
+        {{ "," if not loop.last }}
+        {% endfor %}
+
+    FROM parsed
 )
-select * from cleaned
+
+SELECT * FROM renamed

@@ -10,7 +10,7 @@ SELECT
     -- USD yearly — the rest stay out rather than guessed
     AVG(CASE
         WHEN salary_currency = 'USD' AND salary_period = 'year'
-        THEN salary_average
+        THEN salary_avg
     END) AS avg_salary_year
 FROM job_postings
 -- company_name is the natural key; a null row would break the one-row-per-company grain

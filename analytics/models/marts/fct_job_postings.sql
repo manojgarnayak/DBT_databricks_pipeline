@@ -1,7 +1,6 @@
 WITH job_postings AS (
     SELECT * FROM {{ ref('stg_job_postings') }}
 )
-
 SELECT
     job_id,
     job_title,
@@ -14,7 +13,7 @@ SELECT
     search_date,
     salary_min,
     salary_max,
-    salary_average,
+    salary_avg,
     salary_period,
     salary_currency,
     has_health_insurance,
@@ -22,3 +21,7 @@ SELECT
     has_paid_time_off,
     has_no_degree_mentioned
 FROM job_postings
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY job_id
+    ORDER BY searched_at DESC
+) = 1
